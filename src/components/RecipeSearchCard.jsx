@@ -44,10 +44,10 @@ export default function RecipeSearchCard({ onSelect }) {
       <div className="mb-4">
         <input
           placeholder="Search recipes"
-          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-300"
+          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-300"
         />
       </div>
-      <div className="max-h-[420px] overflow-auto pr-1 space-y-3">
+      <div className="max-h-[420px] sm:max-h-[460px] overflow-auto pr-1 space-y-3">
         {items.map((r) => (
           <div key={r.id} className="flex items-center justify-between gap-3 p-2 rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center gap-3">
@@ -63,7 +63,7 @@ export default function RecipeSearchCard({ onSelect }) {
                 const img = card.querySelector('img.recipe-thumb')
                 if (img) onSelect(r, img)
               }}
-              className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-slate-800 bg-gradient-to-br from-lime-200 via-amber-200 to-sky-200 hover:brightness-105 border border-transparent"
+              className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-slate-800 bg-gradient-to-br from-lime-200 via-rose-200 to-sky-200 hover:brightness-105 border border-transparent shadow-[0_8px_24px_rgba(244,114,182,0.25)]"
             >
               <Plus className="w-4 h-4" /> Add
             </button>

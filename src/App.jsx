@@ -62,6 +62,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white text-slate-800">
+      {/* global corner pastel glows */}
+      <div className="pointer-events-none fixed -z-10 -top-20 -left-20 h-64 w-64 rounded-full bg-lime-200/40 blur-3xl" />
+      <div className="pointer-events-none fixed -z-10 -bottom-24 -right-24 h-64 w-64 rounded-full bg-rose-200/40 blur-3xl" />
+
       <div className="grid grid-cols-12 min-h-screen">
         <div className="col-span-2 xl:col-span-1">
           <Sidebar />
@@ -119,14 +123,14 @@ function FlightImage({ src, start, end, onComplete }) {
       <motion.img
         src={src}
         alt="trail"
-        className="absolute rounded-lg object-cover blur-[2px] opacity-50"
+        className="absolute rounded-lg object-cover blur-[3px] opacity-50"
         style={{ width: start.w, height: start.h, left: start.x - start.w / 2, top: start.y - start.h / 2 }}
         animate={{
           left: [start.x - start.w / 2, mid.x - mid.w / 2, end.x - end.w / 2],
           top: [start.y - start.h / 2, mid.y - mid.h / 2, end.y - end.h / 2],
           width: [start.w, mid.w * 0.9, end.w * 0.9],
           height: [start.h, mid.h * 0.9, end.h * 0.9],
-          opacity: [0.4, 0.25, 0],
+          opacity: [0.45, 0.25, 0],
         }}
         transition={{ duration: 0.9, ease: 'easeInOut' }}
       />
@@ -135,13 +139,18 @@ function FlightImage({ src, start, end, onComplete }) {
       <motion.img
         src={src}
         alt="flying"
-        className="absolute rounded-xl object-cover shadow-xl"
+        className="absolute rounded-xl object-cover shadow-xl ring-2 ring-white/50"
         style={{ width: start.w, height: start.h, left: start.x - start.w / 2, top: start.y - start.h / 2 }}
         animate={{
           left: [start.x - start.w / 2, mid.x - mid.w / 2, end.x - end.w / 2],
           top: [start.y - start.h / 2, mid.y - mid.h / 2, end.y - end.h / 2],
           width: [start.w, mid.w * 0.85, end.w * 1.05, end.w],
           height: [start.h, mid.h * 0.85, end.h * 1.05, end.h],
+          boxShadow: [
+            '0 8px 24px rgba(16,185,129,0.20)',
+            '0 10px 28px rgba(147,51,234,0.20)',
+            '0 12px 32px rgba(14,165,233,0.22)'
+          ],
         }}
         transition={{ duration: 0.9, ease: 'easeInOut' }}
         onAnimationComplete={onComplete}
