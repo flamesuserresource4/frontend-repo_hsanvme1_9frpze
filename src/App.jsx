@@ -1,73 +1,151 @@
-function App() {
+import { useRef, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Sidebar from './components/Sidebar'
+import Header from './components/Header'
+import HeroSpline from './components/HeroSpline'
+import DailyMealCard from './components/DailyMealCard'
+import RecipeSearchCard from './components/RecipeSearchCard'
+
+export default function App() {
+  const [meals, setMeals] = useState({ breakfast: null, lunch: null, dinner: null, snacks: null })
+  const [activeTarget, setActiveTarget] = useState(null)
+  const [pulseLabel, setPulseLabel] = useState(null)
+
+  // Refs for target slots
+  const slotRefs = {
+    Breakfast: useRef(null),
+    Lunch: useRef(null),
+    Dinner: useRef(null),
+    Snacks: useRef(null),
+  }
+
+  const [flight, setFlight] = useState(null) // { src, start, end, label, recipe }
+
+  const handleAddMealSlot = (label) => setActiveTarget(label)
+
+  const placeIntoSlot = (label, recipe) => {
+    const key = label.toLowerCase()
+    setMeals((prev) => ({ ...prev, [key]: recipe }))
+    setPulseLabel(label)
+    setTimeout(() => setPulseLabel(null), 500)
+  }
+
+  const handleSelectRecipe = (recipe, imgEl) => {
+    // Decide which slot to target
+    const label = activeTarget || ["Breakfast", "Lunch", "Dinner", "Snacks"].find((l) => !meals[l.toLowerCase()]) || 'Breakfast'
+
+    const startRect = imgEl.getBoundingClientRect()
+    const targetEl = slotRefs[label].current
+    if (!targetEl) {
+      placeIntoSlot(label, recipe)
+      return
+    }
+    const targetRect = targetEl.getBoundingClientRect()
+
+    const start = {
+      x: startRect.left + startRect.width / 2,
+      y: startRect.top + startRect.height / 2,
+      w: startRect.width,
+      h: startRect.height,
+    }
+    const endThumbSize = 56
+    const end = {
+      x: targetRect.left + 24 + endThumbSize / 2,
+      y: targetRect.top + 24 + endThumbSize / 2,
+      w: endThumbSize,
+      h: endThumbSize,
+    }
+
+    setFlight({ src: recipe.thumbnail, start, end, label, recipe })
+    setActiveTarget(null)
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Subtle pattern overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.05),transparent_50%)]"></div>
+    <div className="min-h-screen bg-white text-slate-800">
+      <div className="grid grid-cols-12 min-h-screen">
+        <div className="col-span-2 xl:col-span-1">
+          <Sidebar />
+        </div>
+        <div className="col-span-10 xl:col-span-11 flex flex-col">
+          <Header />
 
-      <div className="relative min-h-screen flex items-center justify-center p-8">
-        <div className="max-w-2xl w-full">
-          {/* Header with Flames icon */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center mb-6">
-              <img
-                src="/flame-icon.svg"
-                alt="Flames"
-                className="w-24 h-24 drop-shadow-[0_0_25px_rgba(59,130,246,0.5)]"
+          <main className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+            <HeroSpline />
+
+            <div className="grid grid-cols-12 gap-6">
+              <DailyMealCard
+                meals={meals}
+                onAddMeal={(label) => handleAddMealSlot(label)}
+                dayLabel="Today"
+                slotRefs={slotRefs}
+                pulseLabel={pulseLabel}
               />
+
+              <RecipeSearchCard onSelect={handleSelectRecipe} />
             </div>
-
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
-              Flames Blue
-            </h1>
-
-            <p className="text-xl text-blue-200 mb-6">
-              Build applications through conversation
-            </p>
-          </div>
-
-          {/* Instructions */}
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-8 shadow-xl mb-6">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                1
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Describe your idea</h3>
-                <p className="text-blue-200/80 text-sm">Use the chat panel on the left to tell the AI what you want to build</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                2
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Watch it build</h3>
-                <p className="text-blue-200/80 text-sm">Your app will appear in this preview as the AI generates the code</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                3
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Refine and iterate</h3>
-                <p className="text-blue-200/80 text-sm">Continue the conversation to add features and make changes</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center">
-            <p className="text-sm text-blue-300/60">
-              No coding required • Just describe what you want
-            </p>
-          </div>
+          </main>
         </div>
       </div>
+
+      <AnimatePresence>
+        {flight && (
+          <FlightImage
+            key="flight"
+            src={flight.src}
+            start={flight.start}
+            end={flight.end}
+            onComplete={() => {
+              placeIntoSlot(flight.label, flight.recipe)
+              setFlight(null)
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
 
-export default App
+function FlightImage({ src, start, end, onComplete }) {
+  const mid = {
+    x: (start.x + end.x) / 2,
+    y: Math.min(start.y, end.y) - Math.max(80, Math.abs(end.x - start.x) * 0.2),
+    w: (start.w + end.w) / 2,
+    h: (start.h + end.h) / 2,
+  }
+
+  return (
+    <motion.div className="pointer-events-none fixed inset-0 z-50">
+      {/* trail */}
+      <motion.img
+        src={src}
+        alt="trail"
+        className="absolute rounded-lg object-cover blur-[2px] opacity-50"
+        style={{ width: start.w, height: start.h, left: start.x - start.w / 2, top: start.y - start.h / 2 }}
+        animate={{
+          left: [start.x - start.w / 2, mid.x - mid.w / 2, end.x - end.w / 2],
+          top: [start.y - start.h / 2, mid.y - mid.h / 2, end.y - end.h / 2],
+          width: [start.w, mid.w * 0.9, end.w * 0.9],
+          height: [start.h, mid.h * 0.9, end.h * 0.9],
+          opacity: [0.4, 0.25, 0],
+        }}
+        transition={{ duration: 0.9, ease: 'easeInOut' }}
+      />
+
+      {/* main */}
+      <motion.img
+        src={src}
+        alt="flying"
+        className="absolute rounded-xl object-cover shadow-xl"
+        style={{ width: start.w, height: start.h, left: start.x - start.w / 2, top: start.y - start.h / 2 }}
+        animate={{
+          left: [start.x - start.w / 2, mid.x - mid.w / 2, end.x - end.w / 2],
+          top: [start.y - start.h / 2, mid.y - mid.h / 2, end.y - end.h / 2],
+          width: [start.w, mid.w * 0.85, end.w * 1.05, end.w],
+          height: [start.h, mid.h * 0.85, end.h * 1.05, end.h],
+        }}
+        transition={{ duration: 0.9, ease: 'easeInOut' }}
+        onAnimationComplete={onComplete}
+      />
+    </motion.div>
+  )
+}
